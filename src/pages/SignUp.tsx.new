@@ -1,0 +1,277 @@
+/// <reference types="vite/client" />
+
+// SignUp component for user registration
+import React, { useState, FormEvent, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Logo } from "../components/Logo";
+import { Eye, EyeOff, UserPlus, Mail, AlertCircle, CheckCircle, Loader2, X } from "lucide-react";
+import { Label } from "../components/ui/label";
+import { Checkbox } from "../components/ui/checkbox";
+import { Alert, AlertDescription } from "../components/ui/alert";
+
+interface ImportMetaEnv {
+  readonly VITE_API_URL: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
+const SignUp = () => {
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Password validation states
+  const [hasMinLength, setHasMinLength] = useState(false);
+  const [hasUppercase, setHasUppercase] = useState(false);
+  const [hasLowercase, setHasLowercase] = useState(false);
+  const [hasSpecialChar, setHasSpecialChar] = useState(false);
+
+  const validatePassword = (value: string) => {
+    setHasMinLength(value.length >= 8);
+    setHasUppercase(/[A-Z]/.test(value));
+    setHasLowercase(/[a-z]/.test(value));
+    setHasSpecialChar(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value));
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    validatePassword(newPassword);
+  };
+
+  const allRequirementsMet = hasMinLength && hasUppercase && hasLowercase && hasSpecialChar;
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!allRequirementsMet) {
+      const failedRequirements: string[] = [];
+      if (!hasMinLength) failedRequirements.push("at least 8 characters long");
+      if (!hasUppercase) failedRequirements.push("one uppercase letter");
+      if (!hasLowercase) failedRequirements.push("one lowercase letter");
+      if (!hasSpecialChar) failedRequirements.push("one special character");
+      
+      setError(`Password must contain: ${failedRequirements.join(", ")}`);
+      return;
+    }
+
+    if (!agreedToTerms) {
+      setError("Please agree to the terms of service");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      setSuccess('Account created successfully! Redirecting to sign in...');
+      setTimeout(() => navigate("/signin"), 2000);
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    validatePassword(password);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Logo />
+          <h1 className="text-2xl font-bold text-gray-100 mt-6 mb-2">Create an account</h1>
+          <p className="text-gray-400">Start securing your applications today</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 flex items-center gap-2 text-red-400">
+              <AlertCircle className="h-5 w-5 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 flex items-center gap-2 text-green-400">
+              <CheckCircle className="h-5 w-5" />
+              <span>{success}</span>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="signup-name" className="text-sm text-gray-300">
+              Full name
+            </Label>
+            <div className="relative">
+              <UserPlus className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
+              <Input
+                id="signup-name"
+                name="name"
+                type="text"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="pl-10 bg-slate-800/50 border-slate-700 text-gray-100 placeholder:text-gray-500"
+                required
+                autoComplete="name"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="signup-email" className="text-sm text-gray-300">
+              Email address
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
+              <Input
+                id="signup-email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 bg-slate-800/50 border-slate-700 text-gray-100 placeholder:text-gray-500"
+                required
+                autoComplete="email"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="signup-password" className="text-sm text-gray-300">
+              Password
+            </Label>
+            <div className="relative">
+              <Input
+                id="signup-password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Create a password"
+                value={password}
+                onChange={handlePasswordChange}
+                className="pr-10 bg-slate-800/50 border-slate-700 text-gray-100 placeholder:text-gray-500"
+                required
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-300"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+
+            <div className="mt-2 space-y-1 border border-slate-700 rounded-lg p-3 bg-slate-800/50">
+              <div className={`flex items-center gap-2 text-sm ${hasMinLength ? 'text-green-400' : 'text-red-400'}`}>
+                {hasMinLength ? <CheckCircle className="h-4 w-4" /> : <X className="h-4 w-4" />}
+                <span>At least 8 characters long</span>
+              </div>
+              <div className={`flex items-center gap-2 text-sm ${hasUppercase ? 'text-green-400' : 'text-red-400'}`}>
+                {hasUppercase ? <CheckCircle className="h-4 w-4" /> : <X className="h-4 w-4" />}
+                <span>One uppercase letter</span>
+              </div>
+              <div className={`flex items-center gap-2 text-sm ${hasLowercase ? 'text-green-400' : 'text-red-400'}`}>
+                {hasLowercase ? <CheckCircle className="h-4 w-4" /> : <X className="h-4 w-4" />}
+                <span>One lowercase letter</span>
+              </div>
+              <div className={`flex items-center gap-2 text-sm ${hasSpecialChar ? 'text-green-400' : 'text-red-400'}`}>
+                {hasSpecialChar ? <CheckCircle className="h-4 w-4" /> : <X className="h-4 w-4" />}
+                <span>One special character</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="signup-terms"
+              checked={agreedToTerms}
+              onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+              className="rounded border-gray-600 bg-slate-800/50 text-cyan-600 focus:ring-cyan-600"
+            />
+            <Label htmlFor="signup-terms" className="text-gray-300">
+              I agree to the{" "}
+              <a href="#" className="text-cyan-400 hover:text-cyan-300">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="#" className="text-cyan-400 hover:text-cyan-300">
+                Privacy Policy
+              </a>
+            </Label>
+          </div>
+
+          <Button
+            type="submit"
+            disabled={!allRequirementsMet || !agreedToTerms || isLoading}
+            className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Creating Account...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4" />
+                Create Account
+              </span>
+            )}
+          </Button>
+        </form>
+
+        <div className="mt-6 text-center text-sm">
+          <span className="text-gray-400">Already have an account? </span>
+          <button
+            onClick={() => navigate("/signin")}
+            className="text-cyan-400 hover:text-cyan-300 font-medium"
+          >
+            Sign in
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SignUp; 

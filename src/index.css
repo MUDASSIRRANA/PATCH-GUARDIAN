@@ -1,0 +1,109 @@
+/* Calendar styles */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: #2563eb;
+  --rdp-background-color: #fff;
+  --rdp-accent-color-dark: #2563eb;
+  --rdp-background-color-dark: #fff;
+  --rdp-outline: 2px solid var(--rdp-accent-color);
+  --rdp-outline-selected: 2px solid var(--rdp-accent-color);
+  margin: 0;
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.rdp-months {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.rdp-month {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.rdp-table {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.rdp-head_cell {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.rdp-cell {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.rdp-day {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.rdp-day_selected {
+  background: #2563eb !important;
+  color: #fff !important;
+}
+
+.rdp-day_today {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.rdp-day_outside {
+  background: #fff !important;
+  color: #222 !important;
+  opacity: 0.5;
+}
+
+.rdp-caption {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+/* Calendar popover specific styles */
+.calendar-popover {
+  background: #fff !important;
+}
+
+.calendar-popover .rdp,
+.calendar-popover .rdp-months,
+.calendar-popover .rdp-month,
+.calendar-popover .rdp-table,
+.calendar-popover .rdp-head_cell,
+.calendar-popover .rdp-cell {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.calendar-popover .rdp-day {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.calendar-popover .rdp-day_selected {
+  background: #2563eb !important;
+  color: #fff !important;
+}
+
+/* Override dark mode styles */
+.dark .rdp,
+.dark .rdp-months,
+.dark .rdp-month,
+.dark .rdp-table,
+.dark .rdp-head_cell,
+.dark .rdp-cell,
+.dark .rdp-day,
+.dark .rdp-day_today,
+.dark .rdp-day_outside,
+.dark .rdp-caption {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.dark .rdp-day_selected {
+  background: #2563eb !important;
+  color: #fff !important;
+}
